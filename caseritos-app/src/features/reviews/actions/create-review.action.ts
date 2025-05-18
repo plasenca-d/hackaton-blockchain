@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/features/auth/actions/get-user.action";
 import { processImage, validateReviewWithImage } from "@/lib/near-agent";
+import { saveReviewToBlockchain } from "./save-review-to-blockchain.action";
 
 export interface CreateReviewInput {
   saleIntentId: string;
@@ -47,7 +48,7 @@ export async function createReview(data: CreateReviewInput) {
     }
 
     // Validate the review with AI
-    const validationResult = await processImage(data.comment, data.photoUrl);
+    const validationResult = await processImage(data.photoUrl, data.comment);
 
     if (!validationResult.accurate) {
       return {
@@ -77,6 +78,26 @@ export async function createReview(data: CreateReviewInput) {
     // Revalidate paths
     revalidatePath(`/sales-intents/${data.saleIntentId}`);
     revalidatePath("/dashboard/reviews");
+
+    // Save to blockchain in the background
+    // We don't wait for this to complete since it's not critical for the user experience
+    saveReviewToBlockchain(review.id)
+      .then((blockchainResult) => {
+        if (!blockchainResult.success) {
+          console.error(
+            "Failed to save review to blockchain:",
+            blockchainResult.error
+          );
+        } else {
+          console.log(
+            "Review saved to blockchain successfully:",
+            blockchainResult.recordId
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error saving to blockchain:", error);
+      });
 
     return {
       success: true,

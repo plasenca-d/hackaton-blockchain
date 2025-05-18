@@ -26,10 +26,26 @@ export default function SaleIntentsSuccessPage() {
             compradores a tomar decisiones informadas.
           </p>
 
-          <div className="mt-8">
-            <p className="text-sm text-gray-500">
-              Por favor, revisa tu bandeja de entrada en los próximos días.
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <h3 className="font-medium text-blue-800 mb-2">
+              Verificación Blockchain
+            </h3>
+            <p className="text-sm text-blue-600">
+              Tu reseña está siendo registrada en la blockchain para garantizar
+              su autenticidad y transparencia.
             </p>
+            <div className="mt-2 flex items-center justify-center">
+              <div className="animate-pulse h-2 w-24 bg-blue-300 rounded"></div>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <Button
+              onClick={() => router.push("/dashboard")}
+              className="w-full bg-indigo-600 hover:bg-indigo-700"
+            >
+              Volver al Dashboard
+            </Button>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input } from "@//components/ui/input";
@@ -14,6 +14,8 @@ import {
   Filter,
   Calendar,
   Download,
+  Badge,
+  Clock,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -37,66 +39,55 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@//components/ui/alert-dialog";
+import { getUserReviews } from "@/features/reviews/actions/get-user-reviews.action";
+import { isValidHash } from "@/features/reviews/utils/hash-utils";
 
-// Datos de ejemplo para las reseñas
-const reseñasData = [
-  {
-    id: "1",
-    cliente: "Juan Pérez",
-    avatar: "/man-avatar.png",
-    rating: 5,
-    texto:
-      "Excelentes productos, siempre frescos y de gran calidad. María es muy amable y siempre tiene buenos consejos sobre cómo preparar sus productos.",
-    imagen: "/market-products.png",
-    fecha: new Date(2025, 3, 20),
-  },
-  {
-    id: "2",
-    cliente: "Ana García",
-    avatar: "/woman-avatar-2.png",
-    rating: 4,
-    texto:
-      "Muy buena atención y productos de calidad. Recomiendo especialmente sus tomates y lechugas.",
-    imagen: "/vibrant-vegetable-market.png",
-    fecha: new Date(2025, 2, 15),
-  },
-  {
-    id: "3",
-    cliente: "Carlos Rodríguez",
-    avatar: "/man-avatar-2.png",
-    rating: 5,
-    texto:
-      "Increíble experiencia de compra. Los productos son de primera calidad y el trato es excelente.",
-    imagen: "/vibrant-fruit-market.png",
-    fecha: new Date(2025, 1, 28),
-  },
-  {
-    id: "4",
-    cliente: "Laura Martínez",
-    avatar: "/diverse-woman-avatar.png",
-    rating: 3,
-    texto:
-      "Productos buenos pero la atención podría mejorar. A veces hay que esperar mucho tiempo.",
-    imagen: null,
-    fecha: new Date(2025, 1, 10),
-  },
-];
+// Interface for review data structure returned by getUserReviews
+interface ReviewData {
+  id: string;
+  rating: number;
+  comment: string;
+  photoUrl: string | null;
+  hash: string | null;
+  createdAt: string;
+  productName: string;
+  buyer: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+}
 
 export default function ReseñasPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
-  const [reseñas, setReseñas] = useState(reseñasData);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [expandedReviews, setExpandedReviews] = useState<string[]>([]);
+  useEffect(() => {
+    async function loadReviews() {
+      try {
+        setLoading(true);
+        const data = await getUserReviews();
+        setReviews(data ?? []);
+      } catch (error) {
+        console.error("Error loading reviews:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  // Filtrar reseñas según el término de búsqueda
-  const reseñasFiltradas = searchTerm
-    ? reseñas.filter(
+    loadReviews();
+  }, []);
+  const filteredReviews = searchTerm
+    ? reviews.filter(
         (r) =>
-          r.cliente.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.texto.toLowerCase().includes(searchTerm.toLowerCase())
+          (r.buyer.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+          (r.comment?.toLowerCase().includes(searchTerm.toLowerCase()) || '')
       )
-    : reseñas;
+    : reviews;
 
   const toggleExpandReview = (id: string) => {
     setExpandedReviews((prev) =>
@@ -104,10 +95,10 @@ export default function ReseñasPage() {
     );
   };
 
-  // Calcular la calificación promedio
-  const calificacionPromedio =
-    reseñas.reduce((total, reseña) => total + reseña.rating, 0) /
-    reseñas.length;
+  // Calculate average rating
+  const averageRating = reviews.length > 0
+    ? reviews.reduce((total, review) => total + review.rating, 0) / reviews.length
+    : 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">

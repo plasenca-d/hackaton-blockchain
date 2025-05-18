@@ -53,6 +53,9 @@ export default function SaleIntentPage() {
   const photoUrl = form.watch("photoUrl");
 
   useEffect(() => {
+    if (isOwner) {
+      router.replace("/dashboard/sales");
+    }
     async function fetchSaleIntent() {
       if (!saleIntentId) return;
 
