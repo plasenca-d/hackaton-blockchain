@@ -1,7 +1,7 @@
 "use server";
 
-import { validateDescriptionWithImage } from "@/features/reviews/utils/validate-description-with-image";
 import { revalidatePath } from "next/cache";
+import { processImage, validateReviewWithImage } from "@/lib/near-agent";
 
 /**
  * Validates if a product description matches the provided product image
@@ -15,26 +15,14 @@ export async function validateProductDescription(
   imageUrl: string
 ): Promise<{ accurate: boolean; explanation: string }> {
   try {
-    const imageResponse = await fetch(imageUrl);
-
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
-    }
-
-    const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-    
-    // Determine content type
-    const contentType = imageResponse.headers.get("content-type") || "image/jpeg";
-
-    const validationResult = await validateDescriptionWithImage(
-      description,
-      imageBuffer,
-      contentType
-    );
+    const response = await processImage(imageUrl, description);
 
     revalidatePath("/dashboard/sales");
 
-    return validationResult;
+    return {
+      accurate: response.accurate,
+      explanation: response.explanation,
+    };
   } catch (error) {
     console.error("Error validating product description:", error);
     return {

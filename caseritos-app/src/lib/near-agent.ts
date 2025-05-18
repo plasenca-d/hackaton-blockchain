@@ -35,14 +35,66 @@ export interface ReviewValidationResult {
 /**
  * System prompt for the image validation model
  */
-const SYSTEM_PROMPT = `You're an image description validator. Analyze the image and user's description.
+const systemPrompt = `You're an image description validator. Analyze the image and user's description.
 Your response MUST be valid JSON in this format: {"accurate": boolean, "explanation": "string"}
 
 If the description is accurate, respond with: {"accurate": true, "explanation": "brief confirmation"}
 If the description is inaccurate, respond with: {"accurate": false, "explanation": "concise explanation"}
 
 Keep explanations under 100 words. Prioritize objective visual elements. 
-IMPORTANT: Only return the JSON object, no additional text before or after.`;
+IMPORTANT: Only return the JSON object, no additional text before or 
+after.`;
+
+const userPrompt = `Is this description accurate with the image?`;
+
+export async function processImage(imageUrl: string, description: string) {
+  const openAIClient = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
+  try {
+    console.log("processImage called with imageUrl:", imageUrl);
+
+    const { data: chatCompletion, response: raw } =
+      await openAIClient.chat.completions
+        .create({
+          messages: [
+            {
+              role: "system",
+              content: systemPrompt,
+            },
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `${userPrompt} ${description}`,
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: imageUrl,
+                  },
+                },
+              ],
+            },
+          ],
+          model: "gpt-4.1-mini",
+        })
+        .withResponse();
+
+    const message = chatCompletion.choices[0].message;
+    const { content } = message;
+    if (!content) {
+      throw new Error("No content found in the response");
+    }
+
+    return JSON.parse(content) as { accurate: boolean; explanation: string };
+  } catch (error) {
+    console.error("Error processing image:", error);
+    throw error;
+  }
+}
 
 /**
  * Validates if a review description matches the provided image
@@ -59,67 +111,66 @@ export async function validateReviewWithImage(
   auth = serverNearAICredentials
 ): Promise<ReviewValidationResult> {
   try {
-    // Initialize OpenAI client with NEAR AI credentials
     const openai = new OpenAI({
       baseURL: "https://api.near.ai/v1",
       apiKey: `Bearer ${JSON.stringify(auth)}`,
     });
-    
-    // Convert Buffer to base64 if needed
+
     let base64Image: string;
     if (Buffer.isBuffer(imageData)) {
-      base64Image = imageData.toString('base64');
+      base64Image = imageData.toString("base64");
     } else {
-      // If it's already a base64 string, ensure it doesn't have the data URL prefix
-      base64Image = imageData.includes(',') ? imageData.split(',')[1] : imageData;
+      base64Image = imageData.includes(",")
+        ? imageData.split(",")[1]
+        : imageData;
     }
-    
-    // Create a thread first
+
     const thread = await openai.beta.threads.create();
-    
-    // Then add a message with the content
+
     await openai.beta.threads.messages.create(thread.id, {
       role: "user",
       content: [
         {
           type: "image_url",
           image_url: {
-            url: `data:${imageType};base64,${base64Image}`
-          }
+            url: `data:${imageType};base64,${base64Image}`,
+          },
         } as const,
         {
           type: "text",
-          text: {
-            value: reviewText
-          }
-        } as const
-      ]
+          text: reviewText,
+        } as const,
+      ],
     });
-    
+
     // Run the thread with the validation agent
     const agentId = "ultirequiem2.near/validate_review_with_image/0.2.0";
-    
+
     // Create the run with the agent
     const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
       assistant_id: agentId,
     });
-    
+
     // Check if the run completed successfully
     if (run.status !== "completed") {
       throw new Error(`Run failed with status: ${run.status}`);
     }
-    
+
     // Get the assistant's response
     const messages = await openai.beta.threads.messages.list(thread.id);
-    
+
     // Find the assistant's response
     for (const message of messages.data) {
       if (message.role === "assistant" && message.content?.length > 0) {
-        const textContent = message.content.find(part => part.type === "text");
+        const textContent = message.content.find(
+          (part) => part.type === "text"
+        );
         if (textContent && "text" in textContent && textContent.text.value) {
           try {
             // Parse JSON response from the model
-            const result = JSON.parse(textContent.text.value) as ReviewValidationResult;
+            const result = JSON.parse(
+              textContent.text.value
+            ) as ReviewValidationResult;
             return result;
           } catch (e) {
             console.error("Failed to parse validation result:", e);
@@ -128,13 +179,13 @@ export async function validateReviewWithImage(
         }
       }
     }
-    
+
     throw new Error("No valid response found from validation model");
   } catch (error) {
     console.error("Error validating review with image:", error);
     return {
       accurate: false,
-      explanation: "Error processing validation: " + String(error)
+      explanation: "Error processing validation: " + String(error),
     };
   }
 }
