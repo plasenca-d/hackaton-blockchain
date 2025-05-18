@@ -1,8 +1,14 @@
 import OpenAI from "openai";
 import type { NearAuthData } from "./near-ai-api";
+import { serverNearAICredentials } from "../config/near-ai-credentials";
+
+// Example of how to use the static credentials
+export const getNearAIServerCredentials = (): NearAuthData => {
+  return serverNearAICredentials;
+};
 
 export async function evaluateMessageWithAgent(
-  auth: NearAuthData,
+  auth: NearAuthData = getNearAIServerCredentials(),
   agentId: string,
   message: string
 ): Promise<string> {
