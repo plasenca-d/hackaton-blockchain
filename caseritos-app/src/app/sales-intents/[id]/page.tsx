@@ -20,8 +20,10 @@ import { Trash2 } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function SaleIntentPage() {
+  const router = useRouter();
   const { form } = useReviewForm();
 
   const onUploadSuccess = (url: string) => {
@@ -34,6 +36,8 @@ export default function SaleIntentPage() {
     toast.success("Venta registrada con éxito");
 
     // TODO: call an action to send the review and send to the model
+
+    router.replace("/sales-intents/success");
   };
 
   return (
