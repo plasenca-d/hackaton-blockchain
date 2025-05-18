@@ -1,0 +1,18 @@
+{
+	"name": "review_score_by_judge",
+	"version": "0.1.0",
+	"description": "This agent will receive a score and a review, and check if the score is coherent",
+	"category": "agent",
+	"tags": ["featured", "vision"],
+	"details": {
+		"agent": {
+			"defaults": {
+				"model": "llama-v3p1-70b-instruct",
+				"model_provider": "fireworks",
+				"model_temperature": 1.0,
+				"model_max_tokens": 16384
+			}
+		}
+	},
+	"show_entry": true
+}

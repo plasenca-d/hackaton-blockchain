@@ -1,0 +1,38 @@
+[
+  {
+    "transactionHash": "GFctLEFcPbfMLNYgk3TnEDs2iYMqDa7zznWXGXHNN6AF",
+    "blockHash": "8Q8PJfUrEGyoLCAb7zarFy2LXqfSmf9SthbpGeDptebb",
+    "createdAt": "2025-05-18T03:25:20.671Z",
+    "contractId": "ultirequiem2.testnet",
+    "methodName": "add_record",
+    "did1": "eliaz",
+    "did2": "Caraalitos",
+    "dataHash": "ueueaaaue",
+    "recordId": "eliaz-Caraalitos-1747538720671",
+    "status": "SUCCESS",
+    "logs": [
+      "Added record: eliaz-ueueaaaue-Caraalitos"
+    ],
+    "gasBurnt": 308204835710,
+    "explorerLink": "https://explorer.testnet.near.org/transactions/GFctLEFcPbfMLNYgk3TnEDs2iYMqDa7zznWXGXHNN6AF",
+    "nearBlocksLink": "https://testnet.nearblocks.io/txns/GFctLEFcPbfMLNYgk3TnEDs2iYMqDa7zznWXGXHNN6AF"
+  },
+  {
+    "transactionHash": "G4oys9Qv6PSHpmEzK65zmyBEqz2E3MACWh1koQo1XMS7",
+    "blockHash": "G5eP99oXx4HtySZUCvM1QiaxMVvSVrBqSmyznKM61qpF",
+    "createdAt": "2025-05-18T03:41:33.454Z",
+    "contractId": "ultirequiem2.testnet",
+    "methodName": "add_record",
+    "did1": "eliaz",
+    "did2": "Caraalitos",
+    "dataHash": "ueueaaaue",
+    "recordId": "eliaz-Caraalitos-1747539693454",
+    "status": "SUCCESS",
+    "logs": [
+      "Added record: eliaz-ueueaaaue-Caraalitos"
+    ],
+    "gasBurnt": 308204835710,
+    "explorerLink": "https://explorer.testnet.near.org/transactions/G4oys9Qv6PSHpmEzK65zmyBEqz2E3MACWh1koQo1XMS7",
+    "nearBlocksLink": "https://testnet.nearblocks.io/txns/G4oys9Qv6PSHpmEzK65zmyBEqz2E3MACWh1koQo1XMS7"
+  }
+]

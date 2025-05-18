@@ -1,0 +1,30 @@
+# Node modules and dependencies
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment variables
+# .env is needed for the database connection in our case
+# .env.local
+.env.development
+.env.test
+.env.production
+
+# Git related
+.git
+.gitignore
+
+# Development files
+.vscode
+.idea
+*.md
+!README.md
+
+# Local files
+transactions.json
+keypair-info.json
+
+# Other
+.DS_Store
+*.log
