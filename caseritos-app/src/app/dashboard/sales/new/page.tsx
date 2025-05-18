@@ -2,9 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
-import Image from "next/image";
-import { Trash2, Loader2 } from "lucide-react";
+import { CldUploadWidget } from "next-cloudinary";
 import { Card } from "@//components/ui/card";
 import { Label } from "@//components/ui/label";
 
@@ -12,17 +10,34 @@ import { Button } from "@//components/ui/button";
 import { Input } from "@//components/ui/input";
 import { Textarea } from "@//components/ui/textarea";
 import { ImageUploader } from "@//components/ui/image-uploader";
+import {
+  NewSaleFormSchema,
+  useNewSaleForm,
+} from "@/features/sales/hooks/useNewSaleForm";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { z } from "zod";
+import { Trash2 } from "lucide-react";
 
-export default function NuevaVentaPage() {
-  const [notas, setNotas] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [validating, setValidating] = useState(false);
+export default function NewSalePage() {
+  const { form, isLoading } = useNewSaleForm();
 
-  const [productName, setProductName] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [productImage, setProductImage] = useState<File | null>(null);
+  const photoUrl = form.watch("photoUrl");
 
-  const handleSubmit = async (e: React.FormEvent) => {};
+  const onUploadSuccess = (url: string) => {
+    form.setValue("photoUrl", url);
+  };
+
+  const handleSubmit = async (values: z.infer<typeof NewSaleFormSchema>) => {
+    console.log({
+      values,
+    });
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -30,111 +45,125 @@ export default function NuevaVentaPage() {
         <div className="max-w-3xl mx-auto">
           <h1 className="text-2xl font-bold mb-6">Registrar nueva venta</h1>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <Card className="p-6">
-              <h2 className="text-lg font-bold mb-4">Productos</h2>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(handleSubmit)}
+              className="space-y-6"
+            >
+              <Card className="p-6">
+                <h2 className="text-lg font-bold mb-4">Productos</h2>
 
-              <div className="space-y-6">
-                <div className="border rounded-md p-4">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="productName">Nombre del Producto</Label>
-                      <Input
-                        id="productName"
-                        value={productName}
-                        onChange={(e) => setProductName(e.target.value)}
-                        placeholder="Ej: Torta de Chocolate"
-                        required
-                      />
-                    </div>
+                <div className="space-y-6">
+                  <div className="border rounded-md p-4">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <FormField
+                          control={form.control}
+                          name="productName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nombre de Producto</FormLabel>
+                              <FormControl>
+                                <Input
+                                  id="productName"
+                                  {...field}
+                                  placeholder="Ej: Torta de Chocolate"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="descripcion">
-                        Descripción del producto
-                      </Label>
-                      <Textarea
-                        id="descripcion"
-                        value={descripcion}
-                        onChange={(e) => setDescripcion(e.target.value)}
-                        placeholder="Describe tu producto..."
-                        rows={3}
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <FormField
+                          control={form.control}
+                          name="productDescription"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Descripción del producto</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  id="descripcion"
+                                  {...field}
+                                  placeholder="Describe tu producto..."
+                                  rows={3}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label>Imagen del producto</Label>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        Sube una imagen clara de tu producto
-                      </p>
+                      <div className="space-y-2">
+                        <Label>Imagen del producto</Label>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          Sube una imagen clara de tu producto
+                        </p>
 
-                      {productImage && (
-                        <div className="relative h-48 w-full mb-4">
-                          <Image
-                            src={URL.createObjectURL(productImage)}
-                            alt="Imagen del producto"
-                            fill
-                            className="object-cover rounded-md"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                            onClick={() => setProductImage(null)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      )}
-
-                      <ImageUploader onChange={(files) => {}} maxSize={5} />
+                        <CldUploadWidget
+                          uploadPreset={
+                            process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+                          }
+                          onSuccess={(result) => {
+                            if (
+                              typeof result.info === "object" &&
+                              "secure_url" in result.info
+                            ) {
+                              onUploadSuccess(result.info.secure_url);
+                            }
+                          }}
+                          options={{
+                            singleUploadAutoClose: true,
+                          }}
+                        >
+                          {({ open }) => {
+                            return (
+                              <div>
+                                {photoUrl && (
+                                  <div className="relative h-48 w-full mb-4">
+                                    <img
+                                      src={photoUrl}
+                                      alt="Imagen del producto"
+                                      className="w-full h-full object-cover rounded-md"
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="destructive"
+                                      size="icon"
+                                      className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                                      onClick={() =>
+                                        form.setValue("photoUrl", "")
+                                      }
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                )}
+                                <Button
+                                  type="button"
+                                  onClick={() => open()}
+                                  className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                >
+                                  Subir Imagen
+                                </Button>
+                              </div>
+                            );
+                          }}
+                        </CldUploadWidget>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </Card>
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={!productName || !productImage}
-                >
-                  Publicar Producto
-                </Button>
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h2 className="text-lg font-bold mb-4">Notas adicionales</h2>
-              <Textarea
-                value={notas}
-                onChange={(e) => setNotas(e.target.value)}
-                placeholder="Notas o comentarios sobre la venta..."
-                rows={3}
-              />
-            </Card>
-
-            <Button type="submit" className="w-full" disabled={saving}>
-              {saving ? "Procesando venta..." : "Registrar venta"}
-            </Button>
-          </form>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Procesando venta..." : "Registrar venta"}
+              </Button>
+            </form>
+          </Form>
         </div>
       </main>
-
-      {/* Modal de validación con IA */}
-      {validating && (
-        <div className="fixed inset-0 bg-black/50 flex flex-col items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full text-center">
-            <Loader2 className="h-12 w-12 text-caserito-blue animate-spin mx-auto mb-4" />
-            <h3 className="text-lg font-bold mb-2">Validando venta con IA</h3>
-            <p className="text-muted-foreground mb-4">
-              Estamos verificando que los datos e imágenes de la venta sean
-              coherentes...
-            </p>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
-              <div className="bg-caserito-green h-2.5 rounded-full animate-pulse w-full"></div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
