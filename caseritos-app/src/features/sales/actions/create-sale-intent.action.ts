@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/features/auth/actions/get-user.action";
 
 export interface CreateSaleIntentInput {
@@ -27,22 +27,24 @@ export async function createSaleIntent(
       throw new Error("User not authenticated");
     }
 
-    // Create the sale intent record
-    const saleIntent = await prisma.saleIntent.create({
+    const sale = await prisma.sale.create({
       data: {
         productName: data.productName,
-        description: data.productDescription,
+        productDescription: data.productDescription,
         photoUrl: data.photoUrl,
         sellerId: currentUser.id,
-        status: "PENDING", // Default status is PENDING
-        createdAt: new Date(),
       },
     });
 
-    // Revalidate the sales dashboard page
+    const saleIntent = await prisma.saleIntent.create({
+      data: {
+        saleId: sale.id,
+        userId: currentUser.id,
+      },
+    });
+
     revalidatePath("/dashboard/sales");
 
-    // Return the ID of the created sale intent
     return saleIntent.id;
   } catch (error) {
     console.error("Error creating sale intent:", error);

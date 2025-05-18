@@ -55,7 +55,6 @@ export default function NewSalePage() {
       setValidating(true);
       setValidationError(null);
 
-      // Validate the product description against the image before creating the sale
       const { validateProductDescription } = await import(
         "@/features/sales/actions/validate-product-description.action"
       );
@@ -66,7 +65,6 @@ export default function NewSalePage() {
         return;
       }
 
-      // Show loading toast
       const loadingToast = toast.loading(
         "Validando la descripción del producto..."
       );
@@ -76,7 +74,6 @@ export default function NewSalePage() {
         values.photoUrl
       );
 
-      // Dismiss loading toast
       toast.dismiss(loadingToast);
 
       if (!validationResult.accurate) {
@@ -90,8 +87,20 @@ export default function NewSalePage() {
 
       toast.success("Descripción del producto validada");
 
-      // TODO: call an action to get the sale intent id
-      const saleIntentId = "sale_intent_id";
+      // Create sale intent after validation is successful
+      const creatingToast = toast.loading("Registrando la venta...");
+      
+      const { createSaleIntent } = await import(
+        "@/features/sales/actions/create-sale-intent.action"
+      );
+      
+      const saleIntentId = await createSaleIntent({
+        productName: values.productName,
+        productDescription: values.productDescription,
+        photoUrl: values.photoUrl,
+      });
+      
+      toast.dismiss(creatingToast);
 
       setSaleIntentInclude(saleIntentId);
       setShowModal(true);
@@ -289,10 +298,19 @@ export default function NewSalePage() {
                 variant="outline"
                 onClick={() => {
                   setShowModal(false);
-                  router.push("/dashboard");
+                  router.push("/dashboard/sales");
                 }}
               >
-                Cerrar
+                Ver todas las ventas
+              </Button>
+              <Button
+                type="button"
+                onClick={() => {
+                  setShowModal(false);
+                  router.push(`/dashboard/sales/${SaleIntentInclude}`);
+                }}
+              >
+                Ver detalles de la venta
               </Button>
             </DialogFooter>
           </DialogHeader>

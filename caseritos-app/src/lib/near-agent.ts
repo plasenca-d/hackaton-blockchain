@@ -143,23 +143,18 @@ export async function validateReviewWithImage(
       ],
     });
 
-    // Run the thread with the validation agent
     const agentId = "ultirequiem2.near/validate_review_with_image/0.2.0";
 
-    // Create the run with the agent
     const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
       assistant_id: agentId,
     });
 
-    // Check if the run completed successfully
     if (run.status !== "completed") {
       throw new Error(`Run failed with status: ${run.status}`);
     }
 
-    // Get the assistant's response
     const messages = await openai.beta.threads.messages.list(thread.id);
 
-    // Find the assistant's response
     for (const message of messages.data) {
       if (message.role === "assistant" && message.content?.length > 0) {
         const textContent = message.content.find(
@@ -167,7 +162,6 @@ export async function validateReviewWithImage(
         );
         if (textContent && "text" in textContent && textContent.text.value) {
           try {
-            // Parse JSON response from the model
             const result = JSON.parse(
               textContent.text.value
             ) as ReviewValidationResult;
