@@ -207,7 +207,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\franz\\Escritorio\\hackaton\\caseritos-app\\caseritos-app\\src\\generated\\prisma",
+      "value": "C:\\Users\\franz\\Escritorio\\hackaton\\hackaton-blockchain\\caseritos-app\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -221,7 +221,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\franz\\Escritorio\\hackaton\\caseritos-app\\caseritos-app\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\franz\\Escritorio\\hackaton\\hackaton-blockchain\\caseritos-app\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

@@ -12,7 +12,6 @@ import { es } from "date-fns/locale";
 import { Card } from "@//components/ui/card";
 import Link from "next/link";
 import { getRecentReviewsAction } from "@/features/reviews/actions/get-recent-reviews.action";
-import { getRecentSalesAction } from "@/features/sales/actions/get-recent-sales.action";
 import { getStatisticsInformationAction } from "@/features/users/actions/get-statitistics-information.action";
 
 export default async function DashboardPage() {
