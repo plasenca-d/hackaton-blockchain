@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -101,15 +100,14 @@ model Sale {
 }
 
 model Review {
-  id          String  @id @default(cuid())
-  userId      String  @map("user_id")
-  buyerId     String  @map("buyer_id")
-  productName String  @map("product_name")
-  rating      Int     @default(0)
-  comment     String?
+  id       String  @id @default(cuid())
+  userId   String  @map("user_id")
+  buyerId  String  @map("buyer_id")
+  rating   Int     @default(0)
+  comment  String?
   // if it is null, the review it not correctly reviewed yet
-  hash        String?
-  photoUrl    String? @map("photo_url")
+  hash     String?
+  photoUrl String? @map("photo_url")
 
   createdAt DateTime @default(now())
 
