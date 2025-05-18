@@ -122,6 +122,10 @@ npm run build
 - Environment-specific configurations
 - Database migration handling
 
+## Arch Image
+
+![Caserito App Architecture](./public/arch-image.png)
+
 ## Links and Resources
 - Main Application: https://caserito.app/
 - Documentation References:
