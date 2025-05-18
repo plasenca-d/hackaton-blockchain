@@ -1,0 +1,2 @@
+DEFINE_NEAR_METHOD(add_record)
+DEFINE_NEAR_METHOD(get_records)

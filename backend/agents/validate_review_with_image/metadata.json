@@ -1,0 +1,22 @@
+{
+	"name": "validate_review_with_image",
+	"version": "0.2.0",
+	"description": "This agent will receive an image and a description, and check if the description is coherent.",
+	"category": "agent",
+	"tags": ["featured", "vision"],
+	"details": {
+		"agent": {
+			"allow_message_attachments": true,
+			"allow_message_attachments_accept_mime_types": ["image/*"],
+			"framework": "standard",
+
+			"defaults": {
+				"model": "llama-v3p1-70b-instruct",
+				"model_provider": "fireworks",
+				"model_temperature": 1.0,
+				"model_max_tokens": 16384
+			}
+		}
+	},
+	"show_entry": true
+}

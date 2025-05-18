@@ -1,0 +1,64 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  azureSubscription: 'AZ-RG-Frutas'
+  appName: 'frutas'
+  resourceGroup: 'Frutas'
+  nodeVersion: '22.x'
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '$(nodeVersion)'
+    displayName: 'Instalar Node.js'
+
+  - script: |
+      yarn install --frozen-lockfile
+    displayName: 'Instalar dependencias'
+
+  - script: |
+      yarn build
+    displayName: 'Compilar la app (NestJS)'
+
+  # Copiar package.json, yarn.lock y node_modules para ejecutar correctamente
+  - script: |
+      cp package.json dist/
+      cp yarn.lock dist/
+      cd dist
+      yarn install --production --frozen-lockfile
+    displayName: 'Preparar dist para producción'
+
+  # Agregar un archivo de inicio que use require('./main.js')
+  - script: |
+      echo "require('./main');" > dist/start.js
+    displayName: 'Crear start.js para ejecución sencilla'
+
+  # Empaquetar todo
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: 'dist'
+      includeRootFolder: false
+      archiveType: 'zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/demo-acme-frutas-back.zip'
+      replaceExistingArchive: true
+    displayName: 'Empaquetar archivos'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)/demo-acme-frutas-back.zip'
+      artifactName: 'drop'
+    displayName: 'Publicar artefacto'
+
+  - task: AzureWebApp@1
+    inputs:
+      azureSubscription: '$(azureSubscription)'
+      appName: '$(appName)'
+      package: '$(Build.ArtifactStagingDirectory)/demo-acme-frutas-back.zip'
+      startupCommand: 'NODE_ENV=production node start.js' # Este es el nuevo punto de entrada
+    displayName: 'Desplegar a Azure WebApp'
