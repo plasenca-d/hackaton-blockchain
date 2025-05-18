@@ -9,7 +9,6 @@ import { Label } from "@//components/ui/label";
 import { Button } from "@//components/ui/button";
 import { Input } from "@//components/ui/input";
 import { Textarea } from "@//components/ui/textarea";
-import { ImageUploader } from "@//components/ui/image-uploader";
 import {
   NewSaleFormSchema,
   useNewSaleForm,
@@ -41,22 +40,68 @@ export default function NewSalePage() {
   const [showModal, setShowModal] = useState(false);
   const [SaleIntentInclude, setSaleIntentInclude] = useState("");
   const { form, isLoading } = useNewSaleForm();
+  const [validating, setValidating] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const photoUrl = form.watch("photoUrl");
 
   const onUploadSuccess = (url: string) => {
     form.setValue("photoUrl", url);
+    setValidationError(null);
   };
 
   const handleSubmit = async (values: z.infer<typeof NewSaleFormSchema>) => {
-    toast.success("Venta registrada con éxito");
+    try {
+      setValidating(true);
+      setValidationError(null);
 
-    // TODO: call an action to get the sale intent id
+      // Validate the product description against the image before creating the sale
+      const { validateProductDescription } = await import(
+        "@/features/sales/actions/validate-product-description.action"
+      );
 
-    const saleIntentId = "sale_intent_id";
+      if (!values.photoUrl) {
+        setValidationError("Se requiere una imagen del producto");
+        setValidating(false);
+        return;
+      }
 
-    setSaleIntentInclude(saleIntentId);
-    setShowModal(true);
+      // Show loading toast
+      const loadingToast = toast.loading(
+        "Validando la descripción del producto..."
+      );
+
+      const validationResult = await validateProductDescription(
+        values.productDescription,
+        values.photoUrl
+      );
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
+      if (!validationResult.accurate) {
+        setValidationError(
+          `La descripción no coincide con la imagen: ${validationResult.explanation}`
+        );
+        toast.error("La descripción del producto no coincide con la imagen");
+        setValidating(false);
+        return;
+      }
+
+      toast.success("Descripción del producto validada");
+
+      // TODO: call an action to get the sale intent id
+      const saleIntentId = "sale_intent_id";
+
+      setSaleIntentInclude(saleIntentId);
+      setShowModal(true);
+      toast.success("Venta registrada con éxito");
+    } catch (error) {
+      console.error("Error al procesar la venta:", error);
+      toast.error("Ha ocurrido un error al procesar la venta");
+    } finally {
+      setValidating(false);
+    }
   };
 
   return (
@@ -164,7 +209,7 @@ export default function NewSalePage() {
                                   <Button
                                     type="button"
                                     onClick={() => open()}
-                                    className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                                    className="rounded-md bg-indigo-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                   >
                                     Subir Imagen
                                   </Button>
@@ -183,9 +228,24 @@ export default function NewSalePage() {
                   </div>
                 </Card>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Procesando venta..." : "Registrar venta"}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading || validating}
+                >
+                  {validating
+                    ? "Validando descripción..."
+                    : isLoading
+                    ? "Procesando venta..."
+                    : "Registrar venta"}
                 </Button>
+
+                {validationError && (
+                  <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md border border-red-100 mt-2">
+                    <p className="font-semibold">Error de validación:</p>
+                    <p>{validationError}</p>
+                  </div>
+                )}
               </form>
             </Form>
           </div>
