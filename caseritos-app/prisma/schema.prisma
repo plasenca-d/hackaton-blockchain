@@ -91,7 +91,7 @@ model Sale {
   productName        String   @map("product_name")
   productDescription String   @map("product_description")
   createdAt          DateTime @default(now()) @map("created_at")
-  photoUrl           String?  @map("photo_url")
+  photoUrl           String  @map("photo_url")
 
   user       User         @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   SaleIntent SaleIntent[]

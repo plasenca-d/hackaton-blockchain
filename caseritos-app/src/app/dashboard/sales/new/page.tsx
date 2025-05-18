@@ -39,6 +39,7 @@ export default function NewSalePage() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [SaleIntentInclude, setSaleIntentInclude] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
   const { form, isLoading } = useNewSaleForm();
   const [validating, setValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -103,6 +104,13 @@ export default function NewSalePage() {
       toast.dismiss(creatingToast);
 
       setSaleIntentInclude(saleIntentId);
+
+      // Set the share URL dynamically
+      if (typeof window !== "undefined") {
+        const baseUrl = window.location.origin;
+        setShareUrl(`${baseUrl}/sales-intents/${saleIntentId}`);
+      }
+
       setShowModal(true);
       toast.success("Venta registrada con éxito");
     } catch (error) {
@@ -272,16 +280,14 @@ export default function NewSalePage() {
               </span>
               <div className="flex items-center gap-2 p-2 bg-gray-100 rounded-md">
                 <code className="flex-1 text-sm break-all">
-                  https://caseritos.app/sales-intents/{SaleIntentInclude}
+                  {shareUrl || `Cargando enlace...`}
                 </code>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    navigator.clipboard.writeText(
-                      `https://caseritos.app/sales-intents/${SaleIntentInclude}`
-                    );
+                    navigator.clipboard.writeText(shareUrl);
                     toast.success("¡Enlace copiado!");
                   }}
                 >

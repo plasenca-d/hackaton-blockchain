@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Ensure we're in the caseritos-app directory
+# Ensure we're in the caserito-app directory
 cd "$(dirname "$0")"
 
 # Build the project using OpenNext

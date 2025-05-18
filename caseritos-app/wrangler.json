@@ -1,5 +1,5 @@
 {
-  "name": "caseritos-app",
+  "name": "caserito-app",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-05-17",
   "compatibility_flags": ["nodejs_compat"],
