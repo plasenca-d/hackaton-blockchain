@@ -113,15 +113,9 @@ npm install
 npm run build
 ```
 
-## Testing
-Each component includes comprehensive testing:
 
 ### DID Service
-```bash
-yarn run test        # Unit tests
-yarn run test:e2e    # End-to-end tests
-yarn run test:cov    # Test coverage
-```
+
 
 ## Production Deployment
 - Docker containers for service deployment
