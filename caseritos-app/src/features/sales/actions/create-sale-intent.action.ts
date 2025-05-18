@@ -20,7 +20,6 @@ export async function createSaleIntent(
   data: CreateSaleIntentInput
 ): Promise<string> {
   try {
-    // Get the current authenticated user
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {

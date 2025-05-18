@@ -89,17 +89,17 @@ export default function NewSalePage() {
 
       // Create sale intent after validation is successful
       const creatingToast = toast.loading("Registrando la venta...");
-      
+
       const { createSaleIntent } = await import(
         "@/features/sales/actions/create-sale-intent.action"
       );
-      
+
       const saleIntentId = await createSaleIntent({
         productName: values.productName,
         productDescription: values.productDescription,
         photoUrl: values.photoUrl,
       });
-      
+
       toast.dismiss(creatingToast);
 
       setSaleIntentInclude(saleIntentId);
@@ -298,10 +298,10 @@ export default function NewSalePage() {
                 variant="outline"
                 onClick={() => {
                   setShowModal(false);
-                  router.push("/dashboard/sales");
+                  router.push("/dashboard");
                 }}
               >
-                Ver todas las ventas
+                Ir al dashboard
               </Button>
               <Button
                 type="button"

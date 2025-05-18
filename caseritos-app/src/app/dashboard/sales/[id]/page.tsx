@@ -3,7 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, Copy, CheckCircle, Calendar, ShoppingBag, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Copy,
+  CheckCircle,
+  Calendar,
+  ShoppingBag,
+  AlertCircle,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -22,7 +29,11 @@ interface SaleIntent {
   reviewId: string | null;
 }
 
-export default function DetalleVentaPage({ params }: { params: { id: string } }) {
+export default function DetalleVentaPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   const router = useRouter();
   const [sale, setSale] = useState<SaleIntent | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,7 +50,11 @@ export default function DetalleVentaPage({ params }: { params: { id: string } })
           setError("No se encontró la venta solicitada");
         }
       } catch (err) {
-        setError(`Error al cargar los detalles de la venta: ${err instanceof Error ? err.message : String(err)}`);
+        setError(
+          `Error al cargar los detalles de la venta: ${
+            err instanceof Error ? err.message : String(err)
+          }`
+        );
         console.error(err);
       } finally {
         setLoading(false);
@@ -51,7 +66,9 @@ export default function DetalleVentaPage({ params }: { params: { id: string } })
 
   const copyLink = () => {
     if (sale) {
-      navigator.clipboard.writeText(`https://caseritos.app/sales-intents/${sale.id}`);
+      navigator.clipboard.writeText(
+        `https://caseritos.app/sales-intents/${sale.id}`
+      );
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
       toast.success("Enlace copiado al portapapeles");
@@ -62,10 +79,14 @@ export default function DetalleVentaPage({ params }: { params: { id: string } })
     return (
       <div className="min-h-screen flex flex-col bg-gray-50 items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-caserito-green"></div>
-        <p className="mt-4 text-muted-foreground">Cargando detalles de la venta...</p>
+        <p className="mt-4 text-muted-foreground">
+          Cargando detalles de la venta...
+        </p>
       </div>
     );
   }
+
+  console.log(sale);
 
   if (error || !sale) {
     return (
@@ -102,7 +123,9 @@ export default function DetalleVentaPage({ params }: { params: { id: string } })
             <div className="flex flex-col items-center text-center">
               <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
               <h2 className="text-xl font-bold mb-2">Error</h2>
-              <p className="text-muted-foreground mb-6">{error || "No se encontró la venta solicitada"}</p>
+              <p className="text-muted-foreground mb-6">
+                {error || "No se encontró la venta solicitada"}
+              </p>
               <Button onClick={() => router.push("/dashboard/sales")}>
                 Volver a ventas
               </Button>
@@ -176,7 +199,7 @@ export default function DetalleVentaPage({ params }: { params: { id: string } })
                       <p className="text-muted-foreground text-sm mt-1">
                         {sale.productDescription}
                       </p>
-                      
+
                       {sale.photoUrl && (
                         <div className="mt-4">
                           <img
@@ -200,7 +223,9 @@ export default function DetalleVentaPage({ params }: { params: { id: string } })
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="border rounded-md p-4">
-                    <p className="text-sm text-muted-foreground">Fecha de creación</p>
+                    <p className="text-sm text-muted-foreground">
+                      Fecha de creación
+                    </p>
                     <p className="font-medium">
                       {new Date(sale.createdAt).toLocaleDateString("es", {
                         day: "numeric",
@@ -237,7 +262,9 @@ export default function DetalleVentaPage({ params }: { params: { id: string } })
             <div className="space-y-6">
               {/* Enlace para compartir */}
               <Card className="p-6">
-                <h2 className="text-lg font-bold mb-4">Enlace para el cliente</h2>
+                <h2 className="text-lg font-bold mb-4">
+                  Enlace para el cliente
+                </h2>
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 p-2 bg-gray-100 rounded-md">
                     <span className="flex-1 text-sm overflow-hidden text-ellipsis">
@@ -257,7 +284,8 @@ export default function DetalleVentaPage({ params }: { params: { id: string } })
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Comparte este enlace con tu cliente para que pueda realizar el pago.
+                    Comparte este enlace con tu cliente para que pueda realizar
+                    el pago.
                   </p>
                 </div>
               </Card>
