@@ -12,8 +12,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getSaleIntent } from "@/features/sales/actions/get-sale-intent.action";
@@ -39,6 +37,7 @@ export default function DetalleVentaPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string>("");
 
   useEffect(() => {
     async function fetchSaleIntent() {
@@ -63,12 +62,16 @@ export default function DetalleVentaPage({
 
     fetchSaleIntent();
   }, [params.id]);
+  +useEffect(() => {
+    if (typeof window !== "undefined" && sale) {
+      const baseUrl = window.location.origin;
+      setShareUrl(`${baseUrl}/sales-intents/${sale.id}`);
+    }
+  }, [sale]);
 
   const copyLink = () => {
-    if (sale) {
-      navigator.clipboard.writeText(
-        `https://caseritos.app/sales-intents/${sale.id}`
-      );
+    if (shareUrl) {
+      navigator.clipboard.writeText(shareUrl);
       setLinkCopied(true);
       setTimeout(() => setLinkCopied(false), 2000);
       toast.success("Enlace copiado al portapapeles");
@@ -268,7 +271,7 @@ export default function DetalleVentaPage({
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 p-2 bg-gray-100 rounded-md">
                     <span className="flex-1 text-sm overflow-hidden text-ellipsis">
-                      https://caseritos.app/sales-intents/{sale.id}
+                      {shareUrl || `Cargando enlace...`}
                     </span>
                     <Button
                       variant="ghost"

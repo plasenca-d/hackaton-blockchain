@@ -91,7 +91,7 @@ model Sale {
   productName        String   @map("product_name")
   productDescription String   @map("product_description")
   createdAt          DateTime @default(now()) @map("created_at")
-  photoUrl           String?  @map("photo_url")
+  photoUrl           String  @map("photo_url")
 
   user       User         @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   SaleIntent SaleIntent[]
@@ -100,15 +100,19 @@ model Sale {
 }
 
 model Review {
-  id       String  @id @default(cuid())
-  userId   String  @map("user_id")
-  buyerId  String  @map("buyer_id")
-  rating   Int     @default(0)
-  comment  String?
-  hash     String?
-  photoUrl String? @map("photo_url")
-
-  createdAt DateTime @default(now())
+  id                    String    @id @default(cuid())
+  userId                String    @map("user_id")
+  buyerId               String    @map("buyer_id")
+  productName           String    @map("product_name")
+  rating                Int       @default(0)
+  comment               String
+  hash                  String?
+  photoUrl              String    @map("photo_url")
+  blockchainVerified    Boolean   @default(false) @map("blockchain_verified")
+  blockchainTransactionId String?  @map("blockchain_transaction_id")
+  verifiedAt            DateTime? @map("verified_at")
+  
+  createdAt             DateTime  @default(now())
 
   user       User         @relation("SellerReviews", fields: [userId], references: [id], onDelete: Cascade)
   buyer      User         @relation("BuyerReviews", fields: [buyerId], references: [id], onDelete: Cascade)

@@ -1,7 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
-
 import { StarRating } from "@/components/ui/star-rating";
 import {
   ReviewFormSchema,
@@ -16,29 +16,159 @@ import {
 } from "@/components/ui/form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { AlertCircle, Trash2 } from "lucide-react";
 import { CldUploadWidget } from "next-cloudinary";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
+import { getSaleIntentByIdAction } from "@/features/sales-intents/actions/get-sale-intent-by-id.action";
+import { createReview } from "@/features/reviews/actions/create-review.action";
+import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+
+interface SaleIntentData {
+  id: string;
+  productName: string;
+  productDescription: string;
+  photoUrl: string;
+  review: any | null;
+  seller: {
+    id: string;
+    name: string;
+    image: string;
+  } | null;
+}
 
 export default function SaleIntentPage() {
   const router = useRouter();
-  const { form } = useReviewForm();
+  const params = useParams();
+  const { form, isLoading, setIsLoading } = useReviewForm();
+  const { user, loading: userLoading } = useCurrentUser();
+  const [saleIntent, setSaleIntent] = useState<SaleIntentData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+
+  const saleIntentId = params?.id as string;
+  const photoUrl = form.watch("photoUrl");
+
+  useEffect(() => {
+    if (isOwner) {
+      router.replace("/dashboard/sales");
+    }
+    async function fetchSaleIntent() {
+      if (!saleIntentId) return;
+
+      try {
+        const data = await getSaleIntentByIdAction(saleIntentId);
+
+        if (data) {
+          setSaleIntent(data);
+
+          if (data.review) {
+            router.replace("/sales-intents/success");
+          }
+        } else {
+          setError("No se encontró el intento de venta solicitado");
+        }
+      } catch (err) {
+        setError(
+          `Error al cargar los detalles: ${
+            err instanceof Error ? err.message : String(err)
+          }`
+        );
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSaleIntent();
+  }, [saleIntentId, router]);
+
+  useEffect(() => {
+    if (saleIntent?.seller && user && !userLoading) {
+      const isUserOwner = user.id === saleIntent.seller.id;
+      setIsOwner(isUserOwner);
+
+      if (isUserOwner) {
+        toast.error("No puedes crear una reseña para tu propio producto");
+        router.replace("/dashboard/sales");
+      }
+    }
+  }, [saleIntent, user, userLoading, router]);
 
   const onUploadSuccess = (url: string) => {
     form.setValue("photoUrl", url);
+    setValidationError(null);
   };
 
-  const photoUrl = form.watch("photoUrl");
+  const handleSubmit = async (data: z.infer<typeof ReviewFormSchema>) => {
+    try {
+      setIsLoading(true);
+      setValidationError(null);
 
-  const handleSubmit = (data: z.infer<typeof ReviewFormSchema>) => {
-    toast.success("Venta registrada con éxito");
+      const loadingToast = toast.loading("Enviando tu reseña...");
 
-    // TODO: call an action to send the review and send to the model
+      const result = await createReview({
+        saleIntentId: saleIntentId,
+        rating: data.rating,
+        comment: data.comment,
+        photoUrl: data.photoUrl,
+      });
 
-    router.replace("/sales-intents/success");
+      toast.dismiss(loadingToast);
+
+      if (result.success) {
+        toast.success("¡Reseña enviada con éxito!");
+        router.replace("/sales-intents/success");
+      } else {
+        setValidationError(
+          result.explanation || result.error || "Error al procesar la reseña"
+        );
+        toast.error("Error al enviar la reseña");
+      }
+    } catch (error) {
+      console.error("Error al enviar la reseña:", error);
+      toast.error("Ha ocurrido un error al enviar la reseña");
+      setValidationError(
+        `Error: ${error instanceof Error ? error.message : String(error)}`
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando detalles...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !saleIntent) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Error</h2>
+          <p className="text-gray-600 mb-6">
+            {error || "No se encontró el intento de venta"}
+          </p>
+          <Button
+            onClick={() => router.push("/")}
+            className="bg-indigo-600 hover:bg-indigo-700"
+          >
+            Volver al inicio
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8 flex items-center justify-center">
@@ -48,18 +178,35 @@ export default function SaleIntentPage() {
           <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div className="aspect-square relative overflow-hidden rounded-lg">
               <img
-                src="/placeholder-product.jpg"
-                alt="Product"
+                src={saleIntent.photoUrl || "/placeholder-product.jpg"}
+                alt={saleIntent.productName}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>
             <div className="space-y-3 sm:space-y-4">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Product Name
+                {saleIntent.productName}
               </h1>
               <p className="text-gray-600 text-base sm:text-lg leading-relaxed">
-                Product description goes here...
+                {saleIntent.productDescription}
               </p>
+              {saleIntent.seller && (
+                <div className="flex items-center mt-4">
+                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
+                    <img
+                      src={saleIntent.seller.image || "/placeholder-avatar.jpg"}
+                      alt={saleIntent.seller.name || "Vendedor"}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="ml-2">
+                    <p className="text-sm text-gray-500">Vendido por</p>
+                    <p className="font-medium">
+                      {saleIntent.seller.name || "Vendedor"}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -181,9 +328,17 @@ export default function SaleIntentPage() {
                   <Button
                     type="submit"
                     className="w-full flex justify-center py-2.5 sm:py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                    disabled={isLoading}
                   >
-                    Enviar Reseña
+                    {isLoading ? "Enviando..." : "Enviar Reseña"}
                   </Button>
+
+                  {validationError && (
+                    <div className="p-3 text-sm text-red-500 bg-red-50 rounded-md border border-red-100 mt-4">
+                      <p className="font-semibold">Error de validación:</p>
+                      <p>{validationError}</p>
+                    </div>
+                  )}
                 </form>
               </Form>
             </div>
