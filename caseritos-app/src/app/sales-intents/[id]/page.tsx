@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useRouter, useParams } from "next/navigation";
 import { getSaleIntentByIdAction } from "@/features/sales-intents/actions/get-sale-intent-by-id.action";
 import { createReview } from "@/features/reviews/actions/create-review.action";
+import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
 
 interface SaleIntentData {
   id: string;
@@ -41,10 +42,12 @@ export default function SaleIntentPage() {
   const router = useRouter();
   const params = useParams();
   const { form, isLoading, setIsLoading } = useReviewForm();
+  const { user, loading: userLoading } = useCurrentUser();
   const [saleIntent, setSaleIntent] = useState<SaleIntentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
 
   const saleIntentId = params?.id as string;
   const photoUrl = form.watch("photoUrl");
@@ -59,9 +62,18 @@ export default function SaleIntentPage() {
         if (data) {
           setSaleIntent(data);
 
-          // If there's already a review, redirect to success page
           if (data.review) {
             router.replace("/sales-intents/success");
+          }
+
+          if (user && data.seller) {
+            console.log("User ID:", user.id);
+            console.log("Seller ID:", data.seller.id);
+            setIsOwner(user.id === data.seller.id);
+          }
+
+          if (isOwner) {
+            router.replace("/dashboard/sales");
           }
         } else {
           setError("No se encontró el intento de venta solicitado");

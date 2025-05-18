@@ -62,9 +62,7 @@ export default function DetalleVentaPage({
 
     fetchSaleIntent();
   }, [params.id]);
-
-  // Set the share URL once the component is mounted in the browser
-  useEffect(() => {
+  +useEffect(() => {
     if (typeof window !== "undefined" && sale) {
       const baseUrl = window.location.origin;
       setShareUrl(`${baseUrl}/sales-intents/${sale.id}`);

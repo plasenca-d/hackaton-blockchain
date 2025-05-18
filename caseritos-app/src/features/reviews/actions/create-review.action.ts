@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/features/auth/actions/get-user.action";
-import { validateReviewWithImage } from "@/lib/near-agent";
+import { processImage, validateReviewWithImage } from "@/lib/near-agent";
 
 export interface CreateReviewInput {
   saleIntentId: string;
@@ -36,22 +36,18 @@ export async function createReview(data: CreateReviewInput) {
     if (!saleIntent) {
       throw new Error("Sale intent not found");
     }
-    
+
     // Prevent the seller from reviewing their own product
     if (saleIntent.sale.sellerId === currentUser.id) {
       return {
         success: false,
         error: "Validation error",
-        explanation: "No puedes crear una reseña para tu propio producto"
+        explanation: "No puedes crear una reseña para tu propio producto",
       };
     }
 
     // Validate the review with AI
-    const validationResult = await validateReviewWithImage(
-      data.comment,
-      data.photoUrl,
-      "image/jpeg"
-    );
+    const validationResult = await processImage(data.comment, data.photoUrl);
 
     if (!validationResult.accurate) {
       return {
