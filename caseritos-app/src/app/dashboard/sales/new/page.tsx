@@ -30,6 +30,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -38,6 +39,7 @@ import {
 export default function NewSalePage() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [SaleIntentInclude, setSaleIntentInclude] = useState("");
   const { form, isLoading } = useNewSaleForm();
 
   const photoUrl = form.watch("photoUrl");
@@ -53,6 +55,7 @@ export default function NewSalePage() {
 
     const saleIntentId = "sale_intent_id";
 
+    setSaleIntentInclude(saleIntentId);
     setShowModal(true);
   };
 
@@ -189,15 +192,49 @@ export default function NewSalePage() {
         </main>
       </div>
 
-      <Dialog>
-        <DialogTrigger>Open</DialogTrigger>
+      <Dialog open={showModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
+            <DialogTitle>¡Venta registrada con éxito!</DialogTitle>
+            <DialogDescription className="space-y-4">
+              <span className="mb-4 block">
+                Tu venta ha sido registrada. Comparte este enlace con tu cliente
+                para que pueda realizar el pago:
+              </span>
+              <div className="flex items-center gap-2 p-2 bg-gray-100 rounded-md">
+                <code className="flex-1 text-sm break-all">
+                  https://caseritos.app/sales-intents/{SaleIntentInclude}
+                </code>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `https://caseritos.app/sales-intents/${SaleIntentInclude}`
+                    );
+                    toast.success("¡Enlace copiado!");
+                  }}
+                >
+                  Copiar
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                El enlace estará activo por 24 horas.
+              </p>
             </DialogDescription>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowModal(false);
+                  router.push("/dashboard");
+                }}
+              >
+                Cerrar
+              </Button>
+            </DialogFooter>
           </DialogHeader>
         </DialogContent>
       </Dialog>
