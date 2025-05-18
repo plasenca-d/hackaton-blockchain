@@ -26,21 +26,6 @@ export default function SaleIntentsSuccessPage() {
             compradores a tomar decisiones informadas.
           </p>
 
-          <div className="mt-8 space-y-3">
-            <Button
-              onClick={() => router.push("/")}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition-colors"
-            >
-              Volver al inicio
-            </Button>
-            <Button
-              onClick={() => router.push("/dashboard")}
-              variant="outline"
-              className="w-full py-2 px-4 rounded-md transition-colors"
-            >
-              Ir al dashboard
-            </Button>
-          </div>
           <div className="mt-8">
             <p className="text-sm text-gray-500">
               Por favor, revisa tu bandeja de entrada en los próximos días.

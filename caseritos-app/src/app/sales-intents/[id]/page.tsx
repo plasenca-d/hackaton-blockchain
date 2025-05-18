@@ -65,16 +65,6 @@ export default function SaleIntentPage() {
           if (data.review) {
             router.replace("/sales-intents/success");
           }
-
-          if (user && data.seller) {
-            console.log("User ID:", user.id);
-            console.log("Seller ID:", data.seller.id);
-            setIsOwner(user.id === data.seller.id);
-          }
-
-          if (isOwner) {
-            router.replace("/dashboard/sales");
-          }
         } else {
           setError("No se encontró el intento de venta solicitado");
         }
@@ -92,6 +82,18 @@ export default function SaleIntentPage() {
 
     fetchSaleIntent();
   }, [saleIntentId, router]);
+
+  useEffect(() => {
+    if (saleIntent?.seller && user && !userLoading) {
+      const isUserOwner = user.id === saleIntent.seller.id;
+      setIsOwner(isUserOwner);
+
+      if (isUserOwner) {
+        toast.error("No puedes crear una reseña para tu propio producto");
+        router.replace("/dashboard/sales");
+      }
+    }
+  }, [saleIntent, user, userLoading, router]);
 
   const onUploadSuccess = (url: string) => {
     form.setValue("photoUrl", url);
