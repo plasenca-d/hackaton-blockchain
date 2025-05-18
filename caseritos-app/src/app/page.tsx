@@ -19,11 +19,9 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const res = await signIn("google", {
-        redirect: false,
-      });
+      const res = await signIn("google", { callbackUrl: "/dashboard" });
 
-      router.push("/dashboard");
+      // router.push("/dashboard");
     } catch (err) {
       toast.error("Error al iniciar sesión con Google");
     } finally {
