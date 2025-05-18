@@ -11,6 +11,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const existingUser = await prisma.user.findFirst({ where: { email } });
 
       if (!existingUser) {
+        // TODO: Call API to create DID
         await prisma.user.create({ data: { email, image, name } });
       }
 
